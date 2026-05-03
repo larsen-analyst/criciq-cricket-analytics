@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CricIQ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tiempos+Text:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f11;
+            --surface: #16161a;
+            --surface2: #1c1c22;
+            --border: rgba(255,255,255,0.07);
+            --border2: rgba(255,255,255,0.12);
+            --text: #f0eee8;
+            --text2: #9b9893;
+            --text3: #6b6966;
+            --purple: #AFA9EC;
+            --purple-dim: #7F77DD;
+            --purple-bright: #CECBF6;
+            --teal: #5DCAA5;
+            --teal-dim: #1D9E75;
+            --amber: #EF9F27;
+            --red: #E24B4A;
+            --green: #97C459;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Subtle noise texture overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        /* HEADER */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            background: rgba(15,15,17,0.85);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .wordmark {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wordmark-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--purple);
+        }
+
+        .header-divider {
+            width: 1px;
+            height: 16px;
+            background: var(--border2);
+        }
+
+        .header-sub {
+            font-size: 12px;
+            color: var(--text3);
+            letter-spacing: 0.02em;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-header {
+            height: 32px;
+            padding: 0 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            border: 1px solid var(--border2);
+            background: transparent;
+            color: var(--text2);
+            transition: all 0.15s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-header:hover {
+            background: var(--surface2);
+            color: var(--text);
+            border-color: var(--border2);
+        }
+
+        .btn-header-accent {
+            background: rgba(175,169,236,0.1);
+            border-color: rgba(175,169,236,0.25);
+            color: var(--purple-bright);
+        }
+
+        .btn-header-accent:hover {
+            background: rgba(175,169,236,0.18);
+            color: var(--purple-bright);
+        }
+
+        /* LAYOUT */
+        .layout {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: calc(100vh - 60px);
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            border-right: 1px solid var(--border);
+            padding: 24px 0;
+            background: var(--surface);
+            position: sticky;
+            top: 60px;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .sidebar-section {
+            padding: 0 16px 16px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 0;
+        }
+
+        .sidebar-section:last-child { border-bottom: none; }
+
+        .sidebar-label {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text3);
+            padding: 12px 16px 8px;
+        }
+
+        /* UPLOAD WIDGET */
+        .upload-zone {
+            margin: 0 16px 12px;
+            border: 1px dashed var(--border2);
+            border-radius: 10px;
+            padding: 20px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--surface2);
+        }
+
+        .upload-zone:hover {
+            border-color: rgba(175,169,236,0.4);
+            background: rgba(175,169,236,0.04);
+        }
+
+        .upload-icon-wrap {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(175,169,236,0.1);
+            border: 1px solid rgba(175,169,236,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+        }
+
+        .upload-icon-svg {
+            width: 18px;
+            height: 18px;
+            color: var(--purple);
+        }
+
+        .upload-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 3px;
+        }
+
+        .upload-sub {
+            font-size: 11px;
+            color: var(--text3);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        input[type=file] { display: none; }
+
+        .file-badge {
+            display: none;
+            margin: 0 16px 12px;
+            padding: 8px 12px;
+            background: rgba(93,202,165,0.08);
+            border: 1px solid rgba(93,202,165,0.2);
+            border-radius: 8px;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--teal);
+            line-height: 1.5;
+            word-break: break-all;
+        }
+
+        /* MODE TOGGLE */
+        .mode-row {
+            display: flex;
+            gap: 4px;
+            padding: 0 16px 12px;
+        }
+
+        .mode-pill {
+            flex: 1;
+            height: 28px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            border: 1px solid var(--border2);
+            background: transparent;
+            color: var(--text3);
+            transition: all 0.15s;
+        }
+
+        .mode-pill.active {
+            background: rgba(175,169,236,0.12);
+            border-color: rgba(175,169,236,0.3);
+            color: var(--purple-bright);
+        }
+
+        /* ZIP PROGRESS */
+        .zip-block {
+            display: none;
+            margin: 0 16px 12px;
+        }
+
+        .zip-stat {
+            font-size: 11px;
+            color: var(--teal);
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 6px;
+        }
+
+        .progress-bar-track {
+            height: 3px;
+            background: var(--border2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--purple-dim), var(--teal-dim));
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .zip-upload-area {
+            border: 1px dashed var(--border2);
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 11px;
+            color: var(--text3);
+            transition: all 0.2s;
+        }
+
+        .zip-upload-area:hover {
+            border-color: rgba(175,169,236,0.3);
+            color: var(--purple-bright);
+        }
+
+        /* SIDEBAR BUTTONS */
+        .sidebar-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: calc(100% - 32px);
+            margin: 0 16px 6px;
+            padding: 8px 12px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--text2);
+            transition: all 0.15s;
+            text-align: left;
+            text-decoration: none;
+        }
+
+        .sidebar-btn:hover {
+            background: var(--surface2);
+            color: var(--text);
+        }
+
+        .sidebar-btn-accent {
+            background: rgba(175,169,236,0.08);
+            color: var(--purple-bright);
+            border: 1px solid rgba(175,169,236,0.15);
+        }
+
+        .sidebar-btn-accent:hover {
+            background: rgba(175,169,236,0.14);
+        }
+
+        .sidebar-btn-danger {
+            color: rgba(226,75,74,0.7);
+        }
+
+        .sidebar-btn-danger:hover {
+            background: rgba(226,75,74,0.06);
+            color: var(--red);
+        }
+
+        .btn-icon {
+            width: 14px;
+            height: 14px;
+            opacity: 0.7;
+            flex-shrink: 0;
+        }
+
+        /* CLEANING REPORT */
+        .cleaning-block {
+            display: none;
+            margin: 0 16px 12px;
+        }
+
+        .issue-item {
+            padding: 8px 10px;
+            border-radius: 7px;
+            background: rgba(239,159,39,0.06);
+            border: 1px solid rgba(239,159,39,0.15);
+            margin-bottom: 6px;
+        }
+
+        .issue-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--amber);
+            margin-bottom: 3px;
+        }
+
+        .issue-value {
+            font-size: 11px;
+            color: var(--text3);
+            line-height: 1.5;
+        }
+
+        .cleaning-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .btn-fix {
+            flex: 1;
+            height: 28px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s;
+        }
+
+        .btn-fix-primary {
+            background: rgba(175,169,236,0.15);
+            color: var(--purple-bright);
+            border: 1px solid rgba(175,169,236,0.25);
+        }
+
+        .btn-fix-primary:hover { background: rgba(175,169,236,0.22); }
+
+        .btn-fix-ghost {
+            background: transparent;
+            color: var(--text3);
+            border: 1px solid var(--border2);
+        }
+
+        .btn-fix-ghost:hover { background: var(--surface2); color: var(--text2); }
+
+        /* MAIN CONTENT */
+        .main {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+
+        /* QUERY AREA */
+        .query-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* CONVERSATION FEED */
+        .feed {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 48px;
+            gap: 20px;
+        }
+
+        .empty-logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: rgba(175,169,236,0.08);
+            border: 1px solid rgba(175,169,236,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+
+        .empty-sub {
+            font-size: 13px;
+            color: var(--text3);
+            max-width: 380px;
+            line-height: 1.7;
+        }
+
+        .pill-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            max-width: 500px;
+        }
+
+        .pill {
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            color: var(--text2);
+            border: 1px solid var(--border2);
+            background: var(--surface);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .pill:hover {
+            border-color: rgba(175,169,236,0.3);
+            color: var(--purple-bright);
+            background: rgba(175,169,236,0.06);
+        }
+
+        /* RESULT BUBBLES */
+        .query-bubble {
+            align-self: flex-end;
+            max-width: 70%;
+            background: rgba(175,169,236,0.1);
+            border: 1px solid rgba(175,169,236,0.2);
+            border-radius: 16px 16px 4px 16px;
+            padding: 12px 16px;
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .answer-bubble {
+            align-self: flex-start;
+            max-width: 80%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px 16px 16px 16px;
+            padding: 16px 20px;
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        .answer-label {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--purple-dim);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .chart-wrap {
+            margin-top: 16px;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+
+        .chart-wrap img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        /* THINKING INDICATOR */
+        .thinking {
+            align-self: flex-start;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px 16px 16px 16px;
+            font-size: 13px;
+            color: var(--text3);
+        }
+
+        .thinking-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .thinking-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--purple-dim);
+            animation: dot-pulse 1.2s infinite;
+        }
+
+        .thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+        .thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes dot-pulse {
+            0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+            40% { opacity: 1; transform: scale(1); }
+        }
+
+        /* PLAYER SEARCH */
+        .player-search-wrap {
+            position: relative;
+        }
+
+        #player-suggestions {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            z-index: 200;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 -8px 24px rgba(0,0,0,0.4);
+        }
+
+        .suggestion-item {
+            padding: 9px 14px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text2);
+            border-bottom: 1px solid var(--border);
+            transition: background 0.1s;
+        }
+
+        .suggestion-item:hover {
+            background: rgba(175,169,236,0.08);
+            color: var(--purple-bright);
+        }
+
+        .suggestion-item:last-child { border-bottom: none; }
+
+        /* INPUT AREA */
+        .input-area {
+            padding: 16px 48px 24px;
+            border-top: 1px solid var(--border);
+            background: rgba(15,15,17,0.6);
+            backdrop-filter: blur(12px);
+        }
+
+        .input-search-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .player-search-input {
+            flex: 1;
+            height: 32px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 0 12px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text);
+            transition: border-color 0.15s;
+        }
+
+        .player-search-input:focus {
+            outline: none;
+            border-color: rgba(175,169,236,0.3);
+        }
+
+        .player-search-input::placeholder { color: var(--text3); }
+
+        .search-hint {
+            font-size: 11px;
+            color: var(--text3);
+            white-space: nowrap;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .query-textarea {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text);
+            resize: none;
+            height: 72px;
+            line-height: 1.6;
+            transition: border-color 0.15s;
+        }
+
+        .query-textarea:focus {
+            outline: none;
+            border-color: rgba(175,169,236,0.35);
+        }
+
+        .query-textarea::placeholder { color: var(--text3); }
+
+        .ask-btn {
+            width: 72px;
+            height: 72px;
+            border-radius: 12px;
+            background: var(--purple-dim);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+
+        .ask-btn:hover {
+            background: var(--purple);
+            transform: translateY(-1px);
+        }
+
+        .ask-btn:active { transform: translateY(0); }
+
+        .ask-btn svg {
+            width: 22px;
+            height: 22px;
+            color: white;
+        }
+
+        /* STATUS MESSAGE */
+        #status {
+            font-size: 12px;
+            color: var(--text3);
+            margin-top: 8px;
+            padding-left: 4px;
+            display: none;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .status-error { color: var(--red); }
+        .status-info { color: var(--text3); }
+        .status-success { color: var(--teal); }
+
+        /* DATA PREVIEW */
+        #data-preview {
+            display: none;
+            padding: 0 48px 24px;
+        }
+
+        .preview-label {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text3);
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: var(--surface);
+            color: var(--purple-dim);
+            padding: 8px 12px;
+            text-align: left;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text2);
+            white-space: nowrap;
+        }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        tr:last-child td { border-bottom: none; }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .feed { padding: 20px; }
+            .input-area { padding: 12px 20px 20px; }
+            #data-preview { padding: 0 20px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+    <div class="header-left">
+        <div class="wordmark">
+            <div class="wordmark-dot"></div>
+            CricIQ
+        </div>
+        <div class="header-divider"></div>
+        <div class="header-sub">Cricket Analytics</div>
+    </div>
+    <div class="header-right">
+        <a href="/dashboard" class="btn-header btn-header-accent">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            Dashboard
+        </a>
+    </div>
+</header>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="sidebar-label">Data</div>
+        <div class="sidebar-section">
+
+            <div class="mode-row">
+                <button class="mode-pill active" id="mode-single" onclick="setMode('single')">Single File</button>
+                <button class="mode-pill" id="mode-multi" onclick="setMode('multi')">Multi ZIP</button>
+            </div>
+
+            <!-- Single upload -->
+            <div id="single-upload">
+                <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon-wrap">
+                        <svg class="upload-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <div class="upload-title">Upload dataset</div>
+                    <div class="upload-sub">.csv .xlsx .yaml .yml</div>
+                </div>
+                <input type="file" id="fileInput" accept=".csv,.xlsx,.yaml,.yml" onchange="uploadFile()">
+            </div>
+
+            <!-- Multi ZIP -->
+            <div id="multi-upload" style="display:none;">
+                <div class="zip-block" id="multi-summary" style="display:none;">
+                    <div class="zip-stat" id="multi-status">0 matches loaded</div>
+                    <div class="zip-stat" id="multi-rows" style="color:var(--text3)">0 rows</div>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="progress-bar"></div>
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        <button class="btn-fix btn-fix-primary" id="finalise-btn" onclick="finaliseDataset()" style="flex:1;">Finalise</button>
+                        <a id="download-csv-btn" href="/download-csv" download="criciq_dataset.csv"
+                           class="btn-fix btn-fix-ghost" style="display:none;text-decoration:none;text-align:center;line-height:28px;">CSV</a>
+                    </div>
+                </div>
+                <div class="zip-upload-area" id="zip-drop-area" onclick="document.getElementById('zipInput').click()">
+                    <div id="zip-upload-text" style="font-size:12px;">Click to upload ZIP</div>
+                    <div style="font-size:10px;color:var(--text3);margin-top:3px;">Multiple ZIPs merged automatically</div>
+                </div>
+                <input type="file" id="zipInput" accept=".zip,.yaml,.yml" onchange="uploadZipChunk()" style="display:none;">
+            </div>
+
+            <div class="file-badge" id="file-info"></div>
+        </div>
+
+        <!-- CLEANING REPORT -->
+        <div id="cleaning-report" style="display:none;">
+            <div class="sidebar-label">Data Quality</div>
+            <div class="sidebar-section">
+                <div class="cleaning-block" id="cleaning-report-inner" style="display:block;">
+                    <div id="issues-list"></div>
+                    <div class="cleaning-actions">
+                        <button class="btn-fix btn-fix-primary" onclick="applyFixes()">Apply fixes</button>
+                        <button class="btn-fix btn-fix-ghost" onclick="skipFixes()">Skip</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAV -->
+        <div class="sidebar-label">Actions</div>
+        <div class="sidebar-section">
+            <a href="/dashboard" class="sidebar-btn sidebar-btn-accent">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                Open dashboard
+            </a>
+            <button class="sidebar-btn sidebar-btn-danger" onclick="clearData()">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+                Clear data
+            </button>
+        </div>
+
+        <!-- EXAMPLE QUERIES -->
+        <div class="sidebar-label">Try asking</div>
+        <div class="sidebar-section">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:0 16px 4px;">
+                <div onclick="insertQuery('Top 5 batsmen by total runs')" style="padding:7px 10px;border-radius:6px;font-size:11px;color:var(--text3);cursor:pointer;border:1px solid transparent;line-height:1.5;transition:all 0.15s;" onmouseover="this.style.background='rgba(175,169,236,0.06)';this.style.color='var(--purple-bright)';this.style.borderColor='rgba(175,169,236,0.15)'" onmouseout="this.style.background='';this.style.color='var(--text3)';this.style.borderColor='transparent'">Top 5 batsmen by total runs</div><div onclick="insertQuery('Top 10 wicket takers')" style="padding:7px 10px;border-radius:6px;font-size:11px;color:var(--text3);cursor:pointer;border:1px solid transparent;line-height:1.5;transition:all 0.15s;" onmouseover="this.style.background='rgba(175,169,236,0.06)';this.style.color='var(--purple-bright)';this.style.borderColor='rgba(175,169,236,0.15)'" onmouseout="this.style.background='';this.style.color='var(--text3)';this.style.borderColor='transparent'">Top 10 wicket takers</div><div onclick="insertQuery('Economy rate of top bowlers')" style="padding:7px 10px;border-radius:6px;font-size:11px;color:var(--text3);cursor:pointer;border:1px solid transparent;line-height:1.5;transition:all 0.15s;" onmouseover="this.style.background='rgba(175,169,236,0.06)';this.style.color='var(--purple-bright)';this.style.borderColor='rgba(175,169,236,0.15)'" onmouseout="this.style.background='';this.style.color='var(--text3)';this.style.borderColor='transparent'">Economy rate of top bowlers</div><div onclick="insertQuery('Centuries scored against India')" style="padding:7px 10px;border-radius:6px;font-size:11px;color:var(--text3);cursor:pointer;border:1px solid transparent;line-height:1.5;transition:all 0.15s;" onmouseover="this.style.background='rgba(175,169,236,0.06)';this.style.color='var(--purple-bright)';this.style.borderColor='rgba(175,169,236,0.15)'" onmouseout="this.style.background='';this.style.color='var(--text3)';this.style.borderColor='transparent'">Centuries scored against India</div><div onclick="insertQuery('Most sixes in the dataset')" style="padding:7px 10px;border-radius:6px;font-size:11px;color:var(--text3);cursor:pointer;border:1px solid transparent;line-height:1.5;transition:all 0.15s;" onmouseover="this.style.background='rgba(175,169,236,0.06)';this.style.color='var(--purple-bright)';this.style.borderColor='rgba(175,169,236,0.15)'" onmouseout="this.style.background='';this.style.color='var(--text3)';this.style.borderColor='transparent'">Most sixes in the dataset</div><div onclick="insertQuery('Who took hat tricks?')" style="padding:7px 10px;border-radius:6px;font-size:11px;color:var(--text3);cursor:pointer;border:1px solid transparent;line-height:1.5;transition:all 0.15s;" onmouseover="this.style.background='rgba(175,169,236,0.06)';this.style.color='var(--purple-bright)';this.style.borderColor='rgba(175,169,236,0.15)'" onmouseout="this.style.background='';this.style.color='var(--text3)';this.style.borderColor='transparent'">Who took hat tricks?</div><div onclick="insertQuery('Powerplay run rate by team')" style="padding:7px 10px;border-radius:6px;font-size:11px;color:var(--text3);cursor:pointer;border:1px solid transparent;line-height:1.5;transition:all 0.15s;" onmouseover="this.style.background='rgba(175,169,236,0.06)';this.style.color='var(--purple-bright)';this.style.borderColor='rgba(175,169,236,0.15)'" onmouseout="this.style.background='';this.style.color='var(--text3)';this.style.borderColor='transparent'">Powerplay run rate by team</div><div onclick="insertQuery('Top 5 batsmen by strike rate')" style="padding:7px 10px;border-radius:6px;font-size:11px;color:var(--text3);cursor:pointer;border:1px solid transparent;line-height:1.5;transition:all 0.15s;" onmouseover="this.style.background='rgba(175,169,236,0.06)';this.style.color='var(--purple-bright)';this.style.borderColor='rgba(175,169,236,0.15)'" onmouseout="this.style.background='';this.style.color='var(--text3)';this.style.borderColor='transparent'">Top 5 batsmen by strike rate</div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+        <div class="query-area">
+
+            <!-- FEED -->
+            <div class="feed" id="feed">
+
+                <!-- Empty state -->
+                <div class="empty-state" id="empty-state">
+                    <div class="empty-logo">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(175,169,236,0.7)" stroke-width="1.5">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                    </div>
+                    <div class="empty-title">Ask anything about cricket</div>
+                    <div class="empty-sub">Upload a ball-by-ball dataset and ask questions in plain English. CricIQ analyses your data and returns precise statistics with charts.</div>
+                </div>
+
+            </div>
+
+            <!-- DATASET SUMMARY CARD (shown after upload) -->
+            <div id="data-preview" style="display:none; padding:0 48px 16px;">
+                <div id="dataset-summary-card" style="
+                    background: var(--surface);
+                    border: 1px solid var(--border);
+                    border-radius: 12px;
+                    padding: 16px 20px;
+                    display: flex;
+                    align-items: center;
+                    gap: 20px;
+                    flex-wrap: wrap;
+                ">
+                    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:200px;">
+                        <div style="width:36px;height:36px;border-radius:8px;background:rgba(93,202,165,0.1);border:1px solid rgba(93,202,165,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div style="font-size:12px;font-weight:500;color:var(--text);" id="summary-filename">dataset.csv</div>
+                            <div style="font-size:11px;color:var(--text3);margin-top:1px;">Loaded successfully</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:500;color:var(--purple-bright);font-family:'JetBrains Mono',monospace;" id="summary-rows">0</div>
+                            <div style="font-size:10px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;margin-top:2px;">Rows</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:500;color:var(--purple-bright);font-family:'JetBrains Mono',monospace;" id="summary-cols">0</div>
+                            <div style="font-size:10px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;margin-top:2px;">Columns</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:500;color:var(--purple-bright);font-family:'JetBrains Mono',monospace;" id="summary-matches">0</div>
+                            <div style="font-size:10px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;margin-top:2px;">Matches</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:500;color:var(--purple-bright);font-family:'JetBrains Mono',monospace;" id="summary-teams">0</div>
+                            <div style="font-size:10px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;margin-top:2px;">Teams</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATUS -->
+            <div id="status" style="padding:0 48px 8px;"></div>
+
+            <!-- INPUT -->
+            <div class="input-area">
+                <div class="input-search-row">
+                    <div class="player-search-wrap" style="flex:1;position:relative;">
+                        <input type="text" id="player-search" class="player-search-input"
+                               placeholder="Search player name..."
+                               oninput="searchPlayers(this.value)"
+                               onfocus="searchPlayers(this.value)">
+                        <div id="player-suggestions"></div>
+                    </div>
+                    <span class="search-hint">Not sure of name? Search and click to insert.</span>
+                </div>
+                <div class="input-row">
+                    <textarea class="query-textarea" id="queryInput"
+                        placeholder="e.g. Top 5 batsmen by total runs since 2020"
+                        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askQuestion();}"></textarea>
+                    <button class="ask-btn" onclick="askQuestion()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+        let dataLoaded = false;
+        let totalMatchesLoaded = 0;
+        let totalRowsLoaded = 0;
+        const MAX_MATCHES_ESTIMATE = 100;
+
+        // Auto-restore UI state when page loads
+        async function restoreSessionState() {
+            try {
+                const res = await fetch('/session-status');
+                const data = await res.json();
+                if (data.loaded) {
+                    dataLoaded = true;
+                    const fi = document.getElementById('file-info');
+                    fi.textContent = data.filename || 'dataset';
+                    fi.style.display = 'block';
+                    // Restore summary card
+                    updateSummaryCard({
+                        filename: data.filename,
+                        rows: data.rows,
+                        columns: data.columns,
+                        matches: data.matches || '—',
+                        teams: data.teams || '—'
+                    });
+                    if (data.issues) showCleaningReport(data.issues);
+                    // Add a feed message
+                    document.getElementById('empty-state') && (document.getElementById('empty-state').style.display = 'none');
+                    const restored = document.createElement('div');
+                    restored.className = 'answer-bubble';
+                    restored.innerHTML = `<div class="answer-label">Session restored</div><div style="color:var(--text3);font-size:13px;">${Number(data.rows).toLocaleString()} rows still loaded. Ready to query.</div>`;
+                    document.getElementById('feed').appendChild(restored);
+                }
+            } catch(e) {}
+        }
+
+        // Run on page load
+        window.addEventListener('DOMContentLoaded', restoreSessionState);
+
+        function showStatus(msg, type) {
+            const s = document.getElementById('status');
+            s.textContent = msg;
+            s.className = 'status-' + type;
+            s.style.display = 'block';
+            if (type === 'info') {
+                // Show thinking indicator in feed
+                const thinking = document.getElementById('thinking-indicator');
+                if (thinking) thinking.style.display = 'flex';
+            }
+        }
+
+        function setMode(mode) {
+            document.getElementById('single-upload').style.display = mode === 'single' ? 'block' : 'none';
+            document.getElementById('multi-upload').style.display = mode === 'multi' ? 'block' : 'none';
+            document.getElementById('mode-single').className = 'mode-btn' + (mode === 'single' ? ' active' : '');
+            document.getElementById('mode-multi').className = 'mode-btn' + (mode === 'multi' ? ' active' : '');
+        }
+
+        async function clearData() {
+            if (!confirm('Clear all loaded data and start fresh?')) return;
+            await fetch('/clear-data', { method: 'POST' });
+            totalMatchesLoaded = 0;
+            totalRowsLoaded = 0;
+            dataLoaded = false;
+            const fi2 = document.getElementById('file-info'); fi2.textContent = ''; fi2.style.display = 'none';
+            document.getElementById('multi-summary').style.display = 'none';
+            document.getElementById('cleaning-report') && (document.getElementById('cleaning-report').style.display = 'none');
+            document.getElementById('data-preview') && (document.getElementById('data-preview').style.display = 'none');
+            showStatus('Data cleared. Ready for new upload.', 'info');
+            document.getElementById('feed').innerHTML = `<div class="empty-state" id="empty-state"><div class="empty-logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(175,169,236,0.7)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="empty-title">Ask anything about cricket</div><div class="empty-sub">Upload a ball-by-ball dataset and ask questions in plain English.</div></div>`;
+        }
+
+        async function finaliseDataset() {
+            document.getElementById('finalise-btn').textContent = 'Computing metrics...';
+            document.getElementById('finalise-btn').disabled = true;
+            showStatus('Computing all cricket statistics... This may take 15-30 seconds.', 'info');
+            try {
+                const res = await fetch('/finalise', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('progress-bar').style.width = '100%';
+                    showStatus(`Dataset ready! ${data.matches} matches, ${data.rows.toLocaleString()} rows. You can now ask questions or view the dashboard.`, 'success');
+                    document.getElementById('finalise-btn').textContent = '&#10003; Ready';
+                    document.getElementById('download-csv-btn').style.display = 'inline-block';
+                    // Show cleaning report
+                    if (data.issues && data.issues.length > 0) {
+                        showCleaningReport(data.issues);
+                    }
+                    if (data.preview) showPreview(data.preview);
+                    dataLoaded = true;
+                } else {
+                    showStatus('Error: ' + data.error, 'error');
+                    document.getElementById('finalise-btn').disabled = false;
+                    document.getElementById('finalise-btn').textContent = '&#10003; Finalise & Analyse';
+                }
+            } catch(e) {
+                showStatus('Finalise failed. Is the server running?', 'error');
+                document.getElementById('finalise-btn').disabled = false;
+            }
+        }
+
+        async function uploadZipChunk() {
+            const file = document.getElementById('zipInput').files[0];
+            if (!file) return;
+
+            document.getElementById('zip-upload-text').textContent = `Processing: ${file.name}...`;
+            document.getElementById('zip-drop-area').style.borderColor = '#ffaa00';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showStatus(`Processing ${file.name}... Please wait, this may take 20-60 seconds.`, 'info');
+
+            try {
+                const res = await fetch('/upload-more', { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if (data.success) {
+                    totalMatchesLoaded = data.matches;
+                    totalRowsLoaded = data.rows;
+                    dataLoaded = true;
+
+                    totalMatchesLoaded = data.matches;
+                    totalRowsLoaded = data.rows;
+
+                    // Update summary
+                    document.getElementById('multi-summary').style.display = 'block';
+                    document.getElementById('multi-status').textContent = `${totalMatchesLoaded} matches loaded (+${data.new_matches} from ${file.name})`;
+                    document.getElementById('multi-rows').textContent = `${totalRowsLoaded.toLocaleString()} total rows`;
+
+                    // Update progress bar
+                    const pct = Math.min((totalMatchesLoaded / MAX_MATCHES_ESTIMATE) * 100, 95);
+                    document.getElementById('progress-bar').style.width = pct + '%';
+
+                    document.getElementById('zip-drop-area').style.borderColor = '#00d4ff';
+                    document.getElementById('zip-upload-text').textContent = 'Click to upload another ZIP file';
+                    showStatus(`${data.message} Upload another ZIP or click "Finalise & Analyse".`, 'success');
+
+                    // Show download CSV button
+                    document.getElementById('download-csv-btn').style.display = 'inline-block';
+
+                    // Reset file input
+                    document.getElementById('zipInput').value = '';
+                } else {
+                    document.getElementById('zip-drop-area').style.borderColor = '#ff4444';
+                    document.getElementById('zip-upload-text').textContent = 'Click to try again';
+                    showStatus('Error: ' + data.error, 'error');
+                }
+            } catch(e) {
+                showStatus('Upload failed. Is the server running?', 'error');
+                document.getElementById('zip-upload-text').textContent = 'Click to try again';
+            }
+        }
+
+        async function uploadFile() {
+            const file = document.getElementById('fileInput').files[0];
+            if (!file) return;
+            document.getElementById('file-info').textContent = 'Uploading: ' + file.name;
+            const formData = new FormData();
+            formData.append('file', file);
+            const isZip = file.name.toLowerCase().endsWith('.zip');
+            const isYaml = file.name.toLowerCase().endsWith('.yaml') || file.name.toLowerCase().endsWith('.yml');
+            if (isZip) {
+                showStatus('Converting YAML files from ZIP... This may take 1-3 minutes for large datasets. Please wait.', 'info');
+            } else if (isYaml) {
+                showStatus('Converting YAML to ball-by-ball format...', 'info');
+            } else {
+                showStatus('Uploading and analysing your data...', 'info');
+            }
+            try {
+                const res = await fetch('/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.success) {
+                    let infoText = 'Loaded: ' + file.name + ' (' + data.rows + ' rows, ' + data.columns + ' columns)';
+                    if (data.yaml_matches) infoText += ' | ' + data.yaml_message;
+                    const fi = document.getElementById('file-info'); fi.textContent = infoText; fi.style.display = 'block';
+                    showStatus(data.yaml_message || 'File uploaded successfully!', 'success');
+                    dataLoaded = true;
+                    if (data.issues && data.issues.length > 0) {
+                        showCleaningReport(data.issues);
+                    }
+                    showPreview(data.preview);
+                } else {
+                    showStatus('Error: ' + data.error, 'error');
+                }
+            } catch(e) {
+                showStatus('Upload failed. Is the server running?', 'error');
+            }
+        }
+        function showCleaningReport(issues) {
+            const report = document.getElementById('cleaning-report');
+            const list = document.getElementById('issues-list');
+            list.innerHTML = '';
+            issues.forEach(issue => {
+                list.innerHTML += '<div class="issue-item"><span class="issue-label">' + issue.type + '</span><span class="issue-value">' + issue.detail + '</span></div>';
+            });
+            report.style.display = 'block';
+        }
+        function showPreview(rows) {
+            if (!rows || rows.length === 0) return;
+            const keys = Object.keys(rows[0]);
+            let html = '<table><tr>' + keys.map(k => '<th>' + k + '</th>').join('') + '</tr>';
+            rows.forEach(row => {
+                html += '<tr>' + keys.map(k => '<td>' + (row[k] !== null ? row[k] : '') + '</td>').join('') + '</tr>';
+            });
+            html += '</table>';
+            document.getElementById('preview-table').innerHTML = html;
+            document.getElementById('data-preview').style.display = 'block';
+        }
+        async function applyFixes() {
+            showStatus('Applying fixes...', 'info');
+            const res = await fetch('/clean', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'apply'}) });
+            const data = await res.json();
+            if (data.success) {
+                showStatus('Data cleaned successfully! Ready to query.', 'success');
+                document.getElementById('cleaning-report').style.display = 'none';
+                showPreview(data.preview);
+            }
+        }
+        async function skipFixes() {
+            document.getElementById('cleaning-report').style.display = 'none';
+            showStatus('Skipped cleaning. You can still ask questions.', 'info');
+        }
+        let searchTimeout = null;
+        async function searchPlayers(query) {
+            clearTimeout(searchTimeout);
+            if (!dataLoaded || query.length < 2) {
+                document.getElementById('player-suggestions').style.display = 'none';
+                return;
+            }
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch('/players?q=' + encodeURIComponent(query));
+                    const data = await res.json();
+                    if (data.success && data.players.length > 0) {
+                        const box = document.getElementById('player-suggestions');
+                        box.innerHTML = data.players.slice(0, 15).map(p =>
+                            `<div class="suggestion-item" onclick="insertPlayer('${p}')">${p}</div>`
+                        ).join('');
+                        box.style.display = 'block';
+                    } else {
+                        document.getElementById('player-suggestions').style.display = 'none';
+                    }
+                } catch(e) {}
+            }, 300);
+        }
+
+        function insertQuery(text) {
+            document.getElementById('queryInput').value = text;
+            document.getElementById('queryInput').focus();
+        }
+
+        function insertPlayer(name) {
+            const query = document.getElementById('queryInput');
+            const search = document.getElementById('player-search');
+            // Insert player name into query if it has text, otherwise set it
+            if (query.value.trim()) {
+                query.value = query.value + ' ' + name;
+            } else {
+                query.value = 'Show me stats for ' + name;
+            }
+            search.value = '';
+            document.getElementById('player-suggestions').style.display = 'none';
+            query.focus();
+        }
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#player-search') && !e.target.closest('#player-suggestions')) {
+                document.getElementById('player-suggestions').style.display = 'none';
+            }
+        });
+
+        async function askQuestion() {
+            const query = document.getElementById('queryInput').value.trim();
+            if (!query) { showStatus('Please enter a question.', 'error'); return; }
+            if (!dataLoaded) { showStatus('Please upload a data file first.', 'error'); return; }
+            // Add query bubble
+            document.getElementById('empty-state') && (document.getElementById('empty-state').style.display = 'none');
+            const qBubble = document.createElement('div');
+            qBubble.className = 'query-bubble';
+            qBubble.textContent = query;
+            document.getElementById('feed').appendChild(qBubble);
+            // Add thinking indicator
+            const thinkDiv = document.createElement('div');
+            thinkDiv.id = 'thinking-indicator';
+            thinkDiv.className = 'thinking';
+            thinkDiv.innerHTML = '<div class="thinking-dots"><div class="thinking-dot"></div><div class="thinking-dot"></div><div class="thinking-dot"></div></div><span>Analysing...</span>';
+            document.getElementById('feed').appendChild(thinkDiv);
+            thinkDiv.scrollIntoView({behavior: 'smooth'});
+            showStatus('', 'info');
+            try {
+                const res = await fetch('/query', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({query: query}) });
+                const data = await res.json();
+                const thinking = document.getElementById('thinking-indicator');
+                if (thinking) thinking.remove();
+                document.getElementById('status').style.display = 'none';
+
+                if (data.success) {
+                    const answerDiv = document.createElement('div');
+                    answerDiv.className = 'answer-bubble';
+                    answerDiv.innerHTML = `<div class="answer-label">CricIQ</div><div>${data.answer}</div>`;
+                    if (data.chart) {
+                        const chartWrap = document.createElement('div');
+                        chartWrap.className = 'chart-wrap';
+                        chartWrap.innerHTML = `<img src="/static/${data.chart}?t=${Date.now()}" alt="Chart">`;
+                        answerDiv.appendChild(chartWrap);
+                    }
+                    document.getElementById('feed').appendChild(answerDiv);
+                    answerDiv.scrollIntoView({behavior: 'smooth', block: 'end'});
+                } else {
+                    const errDiv = document.createElement('div');
+                    errDiv.className = 'answer-bubble';
+                    errDiv.style.borderColor = 'rgba(226,75,74,0.2)';
+                    errDiv.innerHTML = `<div class="answer-label" style="color:var(--red)">Error</div><div style="color:var(--text3)">${data.error}</div>`;
+                    document.getElementById('feed').appendChild(errDiv);
+                }
+            } catch(e) {
+                showStatus('Query failed. Is the server running?', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
