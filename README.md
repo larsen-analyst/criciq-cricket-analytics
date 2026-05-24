@@ -214,7 +214,7 @@ Session persists across page navigation (no re-upload needed)
 
 ## Dissertation Context
 
-This project was developed as part of an MSc Sport and Exercise Science (Performance Analysis) dissertation at the University of Essex. The research investigates how natural language processing and AI can make cricket performance data accessible to coaches and athletes without requiring technical data analysis skills.
+This project was developed independantly alongside my MSc Sport and Exercise Science (Performance Analysis) at the University of Essex. The research investigates how natural language processing and AI can make cricket performance data accessible to coaches and athletes without requiring technical data analysis skills.
 
 **Supervisor:** Simon Quick
 **Institution:** University of Essex
