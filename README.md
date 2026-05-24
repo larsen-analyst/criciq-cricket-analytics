@@ -5,7 +5,7 @@
 ![Claude API](https://img.shields.io/badge/Claude-API-orange?style=flat)
 ![Pandas](https://img.shields.io/badge/Pandas-3.0-150458?style=flat&logo=pandas&logoColor=white)
 
-A natural language cricket analytics web application built as part of an MSc dissertation at the University of Essex. CricIQ allows coaches and athletes to upload ball-by-ball cricket datasets and ask plain English questions to receive instant statistical insights and visualisations.
+A natural language cricket analytics web application built alongside my MSc at the University of Essex. CricIQ allows coaches and athletes to upload ball-by-ball cricket datasets and ask plain English questions to receive instant statistical insights and visualisations.
 
 ---
 
